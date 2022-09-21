@@ -1,0 +1,28 @@
+{
+    "environments": {
+        "development": {
+            "app_version": "1",
+            "app_env": "development",
+            "bucket_name": "mp-develop",
+            "server_url": "https://dev.merchpals.com",
+            "app_url": "https://development.merchpals.com",
+            "publishable_custom_key": "pk_test_51JHHukCgu649XydHhEUxTBpx1GuX79XjOjrMichtg6L1JjyqYuPF4kIpYH2TXAt57lH7X1N9VSJAC4fq5ThATvG700pcaVDNAS",
+            "csc_api_key": "Y2xpdDV1VWZRUVBueElwUDF5azJSN2dhekZobnBvVjh6M2RSNlY0aw==",
+            "creator_email": "support@creatorsupport.zohodesk.com",
+            "supporter_email": "support@merchpals.zohodesk.com",
+            "distribution": "EA7C885V2W167"
+        },
+        "production": {
+            "app_version": "1",
+            "app_env": "production",
+            "bucket_name": "mpals-react",
+            "server_url": "https://api.merchpals.com",
+            "app_url": "https://merchpals.com",
+            "publishable_custom_key": "pk_live_51JHHukCgu649XydH6nYjqhYntVryiBu84wJN2Xcyuwg5x9fw5BE9lmYACZiptMpIrSkiduCIiFbAnvehfziz3b4800GVPZeXnV",
+            "csc_api_key": "Y2xpdDV1VWZRUVBueElwUDF5azJSN2dhekZobnBvVjh6M2RSNlY0aw==",
+            "creator_email": "support@creatorsupport.zohodesk.com",
+            "supporter_email": "support@merchpals.zohodesk.com",
+            "distribution": "E33DTYDYUB6SVY"
+        }
+    }
+}

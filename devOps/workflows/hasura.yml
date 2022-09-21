@@ -1,0 +1,59 @@
+name: Deploy - Hasura
+
+on:
+  push:
+    branches:
+      - development
+      - staging
+      - production
+      - demo
+    paths:
+      - "hasura/**"
+      - ".github/workflows/hasura.yml"
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set env variable
+        run: echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Get ENV from AWS SecretManager
+        uses: say8425/aws-secrets-manager-actions@v2
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          SECRET_NAME: "${{ env.GIT_BRANCH }}/hitpiece/hasura"
+
+      - name: Apply Hasura migrations - Default
+        uses: tibotiber/hasura-action@v2.1
+        with:
+          args: migrate apply --database-name ${{ env.DATABASE_NAME }}
+        env:
+          HASURA_ENDPOINT: ${{ env.HASURA_GRAPHQL_ENDPOINT }}
+          HASURA_ADMIN_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+          HASURA_WORKDIR: hasura
+
+      - name: Apply Hasura migrations - Accounting
+        uses: tibotiber/hasura-action@v2.1
+        with:
+          args: migrate apply --database-name Accounting
+        env:
+          HASURA_ENDPOINT: ${{ env.HASURA_GRAPHQL_ENDPOINT }}
+          HASURA_ADMIN_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+          HASURA_WORKDIR: hasura
+
+      - name: Apply Hasura metadata
+        uses: tibotiber/hasura-action@v2.1
+        with:
+          args: metadata apply
+        env:
+          HASURA_ENDPOINT: ${{ env.HASURA_GRAPHQL_ENDPOINT }}
+          HASURA_ADMIN_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+          HASURA_WORKDIR: hasura

@@ -1,0 +1,43 @@
+# Should include Health check endpoint
+# Set up Beanstak Environments
+# Elastic Beanstalk > Region > Environments > {ENVIRONMENT NAME} > Configuration > Software > Edit > Environment Properties
+name: Merchpals Backend Deplay to Elastic Beanstalk
+on:
+  push:
+    branches:
+      - "development"
+      - "production"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x .*
+
+      - name: Read & Set Environment Variables from Json config file.
+        uses: rgarcia-phi/json-to-variables@v1.1.0
+        with:
+          filename: "./.github/workflows/config/beanstalk.json"
+          prefix: beanstalk
+          masked: false
+
+      - name: Set env variable
+        run: |
+          echo "GIT_BRANCH=$GITHUB_REF_NAME" >> $GITHUB_ENV
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: ${{ secrets.AWS_MP_SYSTEM_ACCESS_ID }}
+          aws_secret_key: ${{ secrets.AWS_MP_SYSTEM_SECRET_KEY }}
+          application_name: ${{ env.beanstalk_application }}
+          environment_name: "${{ env[format('beanstalk_environments_{0}_environment_name', env.GIT_BRANCH)] }}"
+          version_label: ${{ github.sha }}
+          version_description: ${{ github.event.head_commit.message }}
+          region: ${{ env.beanstalk_region }}
+          deployment_package: deploy.zip
+          wait_for_environment_recovery: true

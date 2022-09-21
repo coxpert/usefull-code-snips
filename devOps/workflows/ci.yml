@@ -1,0 +1,33 @@
+name: Merchpals CI
+on:
+  push:
+    branches:
+      - "*"
+      - "*/*"
+      - "!development"
+      - "!main"
+      - "!production"
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - development
+jobs:
+  Frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.17.0
+      - name: Install Node Modules
+        run: yarn install
+      - name: Prettier
+        run: yarn prettier 
+      - name: Eslint
+        run: yarn lint
+      - name: Test
+        run: yarn test
+      - name: Build
+        run: |
+          cp .env.example .env
+          yarn build

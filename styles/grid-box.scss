@@ -1,0 +1,16 @@
+// auto-fill grid box
+
+.wrapper {
+  display: grid;
+  grid-gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+
+  .item {
+    width: 100%;
+    background-color: white;
+    padding: 10px;
+    height: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+}

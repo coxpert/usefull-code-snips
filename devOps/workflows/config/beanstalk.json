@@ -1,0 +1,12 @@
+{
+  "application": "merchpals",
+  "region": "us-east-2",
+  "environments": {
+    "development": {
+      "environment_name": "Merchpals-Development-api"
+    },
+    "production": {
+      "environment_name": "Merchpals-env"
+    }
+  }
+}

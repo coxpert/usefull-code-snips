@@ -1,0 +1,18 @@
+.custom-scroll-h {
+  max-height: 100%;
+  overflow: auto;
+}
+.custom-scroll-h::-webkit-scrollbar {
+  width: 10px;
+  cursor: pointer;
+}
+.custom-scroll-h::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.custom-scroll-h::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.custom-scroll-h::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

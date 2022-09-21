@@ -1,0 +1,149 @@
+name: Deploy - HBP (HitPiece Inc)
+
+on:
+  push:
+    branches:
+      - development
+      - staging
+      - production
+      - demo
+    paths:
+      - "custom/**"
+      - "maizzle/**"
+      - ".github/workflows/config.yml"
+      - ".github/workflows/config/task-definition.json"
+
+env:
+  ECS_TASK_DEFINITION_PATH: "./.github/workflows/config/task-definition.json"
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set env - git branch & hbp version
+        run: |
+          echo "GIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          echo "HBP_VERSION=$(cat ./custom/hbp/version.txt)" >> $GITHUB_ENV
+
+      - name: Get ENV from AWS SecretManager
+        uses: say8425/aws-secrets-manager-actions@v2
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          SECRET_NAME: "${{ env.GIT_BRANCH }}/hitpiece/hbp"
+
+      # Build maizzle template
+      - name: Build maizzle
+        run: npm i -g @maizzle/cli && npm install && maizzle build
+        working-directory: ./maizzle
+
+      # Move templates to HBP
+      - name: Move maizzle templates to HBP
+        run: ./bin/move-maizzle-template.sh -s hbp
+
+      # Clone HBP repo
+      - name: Clone HBP repo
+        run: git clone https://github.com/upgrademedia/hasura-backend-plus.git --branch ${{ env.HBP_VERSION }} hbp
+      - name: Move custom folder
+        run: cp -r ./custom ./hbp/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Task definition env substitution
+        uses: upgrademedia/replace-env-vars-action@master
+        with:
+          filename: ${{ env.ECS_TASK_DEFINITION_PATH }}
+        env:
+          APP_URL: ${{ env.APP_URL }}
+          AUTO_ACTIVATE_NEW_USERS: ${{ env.AUTO_ACTIVATE_NEW_USERS }}
+          COOKIE_SAME_SITE: ${{ env.COOKIE_SAME_SITE }}
+          COOKIE_SECRET: ${{ env.COOKIE_SECRET }}
+          COOKIE_SECURE: ${{ env.COOKIE_SECURE }}
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          DEFAULT_ALLOWED_USER_ROLES: ${{ env.DEFAULT_ALLOWED_USER_ROLES }}
+          EMAILS_ENABLED: ${{ env.EMAILS_ENABLED }}
+          HASURA_ENDPOINT: ${{ env.HASURA_ENDPOINT }}
+          HASURA_GRAPHQL_ADMIN_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+          HOST: ${{ env.HOST }}
+          JWT_ALGORITHM: ${{ env.JWT_ALGORITHM }}
+          JWT_KEY: ${{ env.JWT_KEY }}
+          LOST_PASSWORD_ENABLED: ${{ env.LOST_PASSWORD_ENABLED }}
+          MAGIC_LINK_ENABLED: ${{ env.MAGIC_LINK_ENABLED }}
+          MIN_PASSWORD_LENGTH: ${{ env.MIN_PASSWORD_LENGTH }}
+          OTP_ISSUER: ${{ env.OTP_ISSUER }}
+          PORT: ${{ env.PORT }}
+          REDIRECT_URL_ERROR: ${{ env.REDIRECT_URL_ERROR }}
+          REDIRECT_URL_SUCCESS: ${{ env.REDIRECT_URL_SUCCESS }}
+          REGISTRATION_CUSTOM_FIELDS: ${{ env.REGISTRATION_CUSTOM_FIELDS }}
+          S3_ACCESS_KEY_ID: ${{ env.S3_ACCESS_KEY_ID }}
+          S3_BUCKET: ${{ env.S3_BUCKET }}
+          S3_ENDPOINT: ${{ env.S3_ENDPOINT }}
+          S3_SECRET_ACCESS_KEY: ${{ env.S3_SECRET_ACCESS_KEY }}
+          S3_SSL_ENABLED: ${{ env.S3_SSL_ENABLED }}
+          SERVER_URL: ${{ env.SERVER_URL }}
+          SMS_MFA_ENABLED: ${{ env.SMS_MFA_ENABLED }}
+          SMTP_HOST: ${{ env.SMTP_HOST }}
+          SMTP_PASS: ${{ env.SMTP_PASS }}
+          SMTP_PORT: ${{ env.SMTP_PORT }}
+          SMTP_SECURE: ${{ env.SMTP_SECURE }}
+          SMTP_SENDER: ${{ env.SMTP_SENDER }}
+          SMTP_USER: ${{ env.SMTP_USER }}
+          SNS_API_VERSION: ${{ env.SNS_API_VERSION }}
+          SNS_AWS_ACCESS_KEY_ID: ${{ env.SNS_AWS_ACCESS_KEY_ID }}
+          SNS_AWS_SECRET_ACCESS_KEY: ${{ env.SNS_AWS_SECRET_ACCESS_KEY }}
+          SNS_REGION: ${{ env.SNS_REGION }}
+          VERIFY_EMAILS: ${{ env.VERIFY_EMAILS }}
+          TASK_DEFINITION_FAMILY: ${{ env.ECS_TASK_DEFINITION_FAMILY }}
+          TWITTER_ENABLED: ${{ env.TWITTER_ENABLED }}
+          TWITTER_CONSUMER_KEY: ${{ env.TWITTER_CONSUMER_KEY }}
+          TWITTER_CONSUMER_SECRET: ${{ env.TWITTER_CONSUMER_SECRET }}
+          FACEBOOK_ENABLED: ${{ env.FACEBOOK_ENABLED }}
+          FACEBOOK_CLIENT_ID: ${{ env.FACEBOOK_CLIENT_ID }}
+          FACEBOOK_CLIENT_SECRET: ${{ env.FACEBOOK_CLIENT_SECRET }}
+          HCAPTCHA_SECRET_KEY: ${{ env.HCAPTCHA_SECRET_KEY }}
+          CPU: ${{ env.CPU }}
+          MEMORY: ${{ env.MEMORY }}
+          REGION: ${{ env.REGION }}
+          JWT_CUSTOM_FIELDS: ${{ env.JWT_CUSTOM_FIELDS }}
+          DOMAIN: ${{ env.DOMAIN }}
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./docker/prod/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        working-directory: ./hbp
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION_PATH }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

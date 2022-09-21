@@ -1,0 +1,66 @@
+# Notes
+# The bucket should be allowed with ACLs
+# S3 > Bucket > {BUCKET_NAME} > Permissions > Ibject Ownership > Edit > ACLs enabled > Bucket owner preferred.
+name: Merchpals Frontend Deplay to S3
+on:
+  push:
+    branches:
+      - "development"
+      - "production"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.13.1
+
+      - name: Read & Set Environment Variables from Json config file.
+        uses: rgarcia-phi/json-to-variables@v1.1.0
+        with:
+          filename: "./.github/workflows/config/s3.json"
+          prefix: s3
+          masked: false
+
+      - name: Set env variable
+        run: |
+          echo "GIT_BRANCH=$GITHUB_REF_NAME" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn run build
+        env:
+          REACT_APP_VERSION: "${{ env[format('s3_environments_{0}_app_version', env.GIT_BRANCH)] }}"
+          REACT_APP_ENV: "${{ env[format('s3_environments_{0}_app_env', env.GIT_BRANCH)] }}"
+          REACT_APP_URL: "${{ env[format('s3_environments_{0}_app_url', env.GIT_BRANCH)] }}"
+          REACT_APP_SERVER_URL: "${{ env[format('s3_environments_{0}_server_url', env.GIT_BRANCH)] }}"
+          REACT_APP_STRIPE_PUBLISHABLE_CUSTOMER_KEY: "${{ env[format('s3_environments_{0}_publishable_custom_key', env.GIT_BRANCH)] }}"
+          REACT_APP_CSC_APIKEY: "${{ env[format('s3_environments_{0}_csc_api_key', env.GIT_BRANCH)] }}"
+          REACT_APP_CREATER_EMAIL: "${{ env[format('s3_environments_{0}_creator_email', env.GIT_BRANCH)] }}"
+          REACT_APP_SUPPORTER_EMAIL: "${{ env[format('s3_environments_{0}_supporter_email', env.GIT_BRANCH)] }}"
+
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
+        id: S3
+        with:
+          aws_key_id: ${{secrets.AWS_MP_SYSTEM_ACCESS_ID}}
+          aws_secret_access_key: ${{secrets.AWS_MP_SYSTEM_SECRET_KEY}}
+          aws_bucket: "${{ env[format('s3_environments_{0}_bucket_name', env.GIT_BRANCH)] }}"
+          source_dir: build
+          destination_dir: ""
+
+      - name: Invalidate CloudFront
+        uses: chetan/invalidate-cloudfront-action@v2
+        env:
+          DISTRIBUTION: "${{ env[format('s3_environments_{0}_distribution', env.GIT_BRANCH)] }}"
+          PATHS: "/*"
+          AWS_REGION: "us-east-2"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_MP_SYSTEM_ACCESS_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_MP_SYSTEM_SECRET_KEY }}
