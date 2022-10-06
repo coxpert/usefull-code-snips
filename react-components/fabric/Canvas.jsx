@@ -112,43 +112,44 @@ const Canvas = forwardRef(({ canvasMode, ...props }, ref) => {
 
   useEffect(() => {
     if (backgroundColor && canvas) {
-      if (backgroundRect) {
-        backgroundRect.setOptions({
-          fill: backgroundColor,
-        });
-      } else {
-        const zoom = canvas.getZoom();
+      canvas.setBackgroundColor(backgroundColor)
+      // if (backgroundRect) {
+      //   backgroundRect.setOptions({
+      //     fill: backgroundColor,
+      //   });
+      // } else {
+      //   const zoom = canvas.getZoom();
 
-        const top = OUTLINE_WIDTH;
-        const left = OUTLINE_WIDTH;
+      //   const top = OUTLINE_WIDTH;
+      //   const left = OUTLINE_WIDTH;
 
-        const width = canvas.width / zoom - top * 2;
-        const height = canvas.height / zoom - left * 2;
+      //   const width = canvas.width / zoom - top * 2;
+      //   const height = canvas.height / zoom - left * 2;
 
-        var rect = new fabric.Rect({
-          top,
-          left,
-          width,
-          height,
-          rx: width * 0.11,
-          ry: height * 0.06,
-          objectCaching: false,
-          fill: backgroundColor,
-          selectable: false,
-        });
-        rect.toObject = (function (toObject) {
-          return function (propertiesToInclude) {
-            return fabric.util.object.extend(
-              toObject.call(this, propertiesToInclude),
-              {
-                id: "backgroundRect",
-              }
-            );
-          };
-        })(rect.toObject);
-        canvas.add(rect);
-        rect.sendToBack();
-        setBackgroundRect(rect);
+      //   var rect = new fabric.Rect({
+      //     top,
+      //     left,
+      //     width,
+      //     height,
+      //     rx: width * 0.11,
+      //     ry: height * 0.06,
+      //     objectCaching: false,
+      //     fill: backgroundColor,
+      //     selectable: false,
+      //   });
+      //   rect.toObject = (function (toObject) {
+      //     return function (propertiesToInclude) {
+      //       return fabric.util.object.extend(
+      //         toObject.call(this, propertiesToInclude),
+      //         {
+      //           id: "backgroundRect",
+      //         }
+      //       );
+      //     };
+      //   })(rect.toObject);
+      //   canvas.add(rect);
+      //   rect.sendToBack();
+      //   setBackgroundRect(rect);
       }
       updateCanvasData();
       canvas.renderAll();
