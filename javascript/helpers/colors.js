@@ -13,3 +13,22 @@ const rgbToHex = (rgb) => {
     }
     return hex
 }
+
+const pastelColors = () => {
+    const r = Math.round(Math.random() * 127 + 127).toString(16)
+    const g = Math.round(Math.random() * 127 + 127).toString(16)
+    const b = Math.round(Math.random() * 127 + 127).toString(16)
+    return '#' + r + g + b
+}
+
+const subtleColors = () => {
+    const r = Math.round(Math.random() * 127).toString(16)
+    const g = Math.round(Math.random() * 127).toString(16)
+    const b = Math.round(Math.random() * 127).toString(16)
+    return '#' + r + g + b
+}
+
+const variantColor = () => {
+    return '#' + Math.floor(Math.random() * 16777215).toString(16);
+}
+

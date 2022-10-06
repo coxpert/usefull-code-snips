@@ -1,0 +1,13 @@
+// transparent background image
+.transparent-bg {
+  background-size: 16px 16px;
+  background-image: conic-gradient(
+    white 0deg,
+    white 90deg,
+    #cccccc 90deg,
+    #cccccc 180deg,
+    white 180deg,
+    white 270deg,
+    #cccccc 270deg
+  );
+}
