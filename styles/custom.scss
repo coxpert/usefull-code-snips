@@ -716,8 +716,9 @@ input[readonly]:focus {
 .badge-green {
   background-color: rgba(56, 152, 56, 0.85);
 }
-
-// margin and padding
+// Margin and Padding
+$spacing: 8px;
+$spacingDegree: 10;
 @mixin spacing($properties) {
   @for $i from 0 through $spacingDegree {
     &#{$i} {
@@ -733,22 +734,16 @@ input[readonly]:focus {
   }
 }
 
-// margin
-.m- {
-  @include spacing(margin);
-}
-
-.mt- {
-  @include spacing(margin-top);
-}
-
-.lg- {
-  @include spacing(margin);
-}
-
-// padding
 .p- {
   @include spacing(padding);
+}
+
+.pt- {
+  @include spacing(padding-top);
+}
+
+.pb- {
+  @include spacing(padding-bottom);
 }
 
 .pl- {
@@ -759,16 +754,37 @@ input[readonly]:focus {
   @include spacing(padding-right);
 }
 
+.px- {
+  @include spacing(padding-left, padding-right);
+}
+
 .py- {
-  $properties: padding-top, padding-bottom;
-  @include spacing($properties);
+  @include spacing(padding-top, padding-bottom);
 }
 
-.position-sticky {
-  position: sticky;
-  top: 0;
+.m- {
+  @include spacing(margin);
 }
 
-.bg-white {
-  background-color: white;
+.mt- {
+  @include spacing(margin-top);
 }
+
+.mb- {
+  @include spacing(margin-bottom);
+}
+
+.ml- {
+  @include spacing(margin-left);
+}
+
+.mr- {
+  @include spacing(margin-right);
+}
+
+.mx- {
+  @include spacing(margin-left, margin-right);
+}
+
+.my- {
+  @include spacing

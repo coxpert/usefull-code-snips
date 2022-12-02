@@ -1,6 +1,13 @@
 # Notes
+# Enable public access
+# Enable Static Website Hosting
+# S3 > Bucket > {BUCKET_NAME} > Properties > Static website hosting > Edit > 
+# - Static website hosting: Enabled
+# - Hosting type: Host a static website
+# - Index document: index.html
+# - Error Document: index.html
 # The bucket should be allowed with ACLs
-# S3 > Bucket > {BUCKET_NAME} > Permissions > Ibject Ownership > Edit > ACLs enabled > Bucket owner preferred.
+# S3 > Bucket > {BUCKET_NAME} > Permissions > Object Ownership > Edit > ACLs enabled > Bucket owner preferred.
 name: Merchpals Frontend Deplay to S3
 on:
   push:
