@@ -29,3 +29,16 @@ https://write.corbpie.com/how-to-fix-mysql-not-starting-in-xampp/#:~:text=Fixing
 # Ubuntu Xampp issue.
 
 https://stackoverflow.com/questions/40480843/xampp-another-web-server-is-already-running
+
+# Install Elixir
+
+sudo apt-get install elixir
+
+# Install PostgreSQL
+
+sudo apt-get install postgresql
+sudo systemctl start postgresql.service
+
+# Phoenix Get Started
+
+https://fullstackphoenix.com/tutorials/getting-started-with-phoenix-and-liveview
