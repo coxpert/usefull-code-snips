@@ -37,6 +37,8 @@
  * - Resend stripe webhook
  * Command: stripe events resend evt_1LesCa2QKKDnnwyrfTLN1QLv
  * 
+ * - Stripe Test
+ * https://stripe.com/docs/testing
  */
 
 
