@@ -10,3 +10,11 @@ https://stackoverflow.com/questions/42094842/curl-error-60-ssl-certificate-in-la
 
 - Check webhook type
 - Check Signature (local server) EX. merchpals
+
+# PHP: Download PHP
+
+https://windows.php.net/downloads/releases/archives/
+
+# PHP/Laravel - 504 Timeout Error with Laravel Valet
+
+https://github.com/laravel/valet/issues/315
