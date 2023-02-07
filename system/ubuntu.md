@@ -42,3 +42,8 @@ sudo systemctl start postgresql.service
 # Phoenix Get Started
 
 https://fullstackphoenix.com/tutorials/getting-started-with-phoenix-and-liveview
+
+# RUN DOCKER WITHOUT SUDO COMMAND
+
+// Got permission denied while trying to connect to the Docker daemon socket at unix:
+sudo chmod 666 /var/run/docker.sock
